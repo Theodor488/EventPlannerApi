@@ -22,51 +22,55 @@ namespace EventPlannerApi.Controllers
 
         // GET: api/Events
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
+        public async Task<ActionResult<IEnumerable<EventDTO>>> GetEvents()
         {
-            return await _context.Events.ToListAsync();
+            return await _context.Events
+                .Select(x => ItemToDTO(x))
+                .ToListAsync();
         }
 
         // GET: api/Events/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Event>> GetEvent(Guid id)
+        public async Task<ActionResult<EventDTO>> GetEvent(Guid id)
         {
-            var @event = await _context.Events.FindAsync(id);
+            var eventItem = await _context.Events.FindAsync(id);
 
-            if (@event == null)
+            if (eventItem == null)
             {
                 return NotFound();
             }
 
-            return @event;
+            return ItemToDTO(eventItem);
         }
 
         // PUT: api/Events/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEvent(Guid id, Event @event)
+        public async Task<IActionResult> PutEvent(Guid id, EventDTO eventDTO)
         {
-            if (id != @event.Id)
+            if (id != eventDTO.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(@event).State = EntityState.Modified;
+            var eventItem = await _context.Events.FindAsync(id);
+            if (eventItem == null)
+            {
+                return NotFound();
+            }
+
+            eventItem.Name = eventDTO.Name;
+            eventItem.Location = eventDTO.Location;
+            eventItem.Description = eventDTO.Description;
+            eventItem.Date = eventDTO.Date;
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException) when (!EventExists(id))
             {
-                if (!EventExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
             return NoContent();
@@ -75,25 +79,36 @@ namespace EventPlannerApi.Controllers
         // POST: api/Events
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Event>> PostEvent(Event eventItem)
+        public async Task<ActionResult<EventDTO>> PostEvent(EventDTO eventDTO)
         {
+            var eventItem = new Event
+            {
+                Name = eventDTO.Name,
+                Location = eventDTO.Location,
+                Description = eventDTO.Description,
+                Date = eventDTO.Date
+            };
+
             _context.Events.Add(eventItem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(eventItem), new { id = eventItem.Id }, eventItem);
+            return CreatedAtAction(
+                nameof(eventItem),
+                new { id = eventItem.Id },
+                ItemToDTO(eventItem));
         }
 
         // DELETE: api/Events/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEvent(Guid id)
         {
-            var @event = await _context.Events.FindAsync(id);
-            if (@event == null)
+            var eventItem = await _context.Events.FindAsync(id);
+            if (eventItem == null)
             {
                 return NotFound();
             }
 
-            _context.Events.Remove(@event);
+            _context.Events.Remove(eventItem);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -103,5 +118,15 @@ namespace EventPlannerApi.Controllers
         {
             return _context.Events.Any(e => e.Id == id);
         }
+
+        private static EventDTO ItemToDTO(Event eventItem) =>
+       new EventDTO
+       {
+           Id = eventItem.Id,
+           Name = eventItem.Name,
+           Location = eventItem.Location,
+           Description = eventItem.Description,
+           Date = eventItem.Date
+       };
     }
 }
