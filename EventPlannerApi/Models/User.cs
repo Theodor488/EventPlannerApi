@@ -1,6 +1,9 @@
-﻿namespace EventPlannerApi.Models
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
+
+namespace EventPlannerApi.Models
 {
-    public class User
+    public class User : IdentityUser
     {
         public Guid Id { get; set; }
         public string UserName { get; set; }
