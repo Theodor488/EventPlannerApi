@@ -5,11 +5,7 @@ namespace EventPlannerApi.Models
 {
     public class User : IdentityUser
     {
-        public Guid Id { get; set; }
-        public string UserName { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string UserType { get; set; }
+        [MaxLength(30)]
+        public string? Name { get; set; }
     }
 }

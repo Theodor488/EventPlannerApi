@@ -33,6 +33,9 @@ namespace EventPlannerApi.Services
             };
 
             var createUserResult = await userManager.CreateAsync(user, model.Password);
+
+            // Add failed password logic exception. Require Alphanumeric uppercase
+
             if (!createUserResult.Succeeded)
                 return (0, "User creation failed! Please check user details and try again.");
 

@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EventPlannerApi.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EventPlannerApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EventsController : ControllerBase
     {
         private readonly EventContext _context;
@@ -46,6 +48,7 @@ namespace EventPlannerApi.Controllers
         // PUT: api/Events/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutEvent(Guid id, EventDTO eventDTO)
         {
             if (id != eventDTO.Id)
@@ -79,6 +82,7 @@ namespace EventPlannerApi.Controllers
         // POST: api/Events
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<EventDTO>> PostEvent(EventDTO eventDTO)
         {
             var eventItem = new Event
@@ -100,6 +104,7 @@ namespace EventPlannerApi.Controllers
 
         // DELETE: api/Events/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteEvent(Guid id)
         {
             var eventItem = await _context.Events.FindAsync(id);
