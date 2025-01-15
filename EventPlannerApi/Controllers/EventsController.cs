@@ -24,6 +24,7 @@ namespace EventPlannerApi.Controllers
 
         // GET: api/Events
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EventDTO>>> GetEvents()
         {
             return await _context.Events
