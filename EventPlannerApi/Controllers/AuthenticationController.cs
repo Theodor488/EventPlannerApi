@@ -1,7 +1,9 @@
 ﻿using EventPlannerApi.Models;
 using EventPlannerApi.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace EventPlannerApi.Controllers
 {
@@ -11,11 +13,13 @@ namespace EventPlannerApi.Controllers
     {
         private readonly IAuthService _authService;
         private readonly ILogger<AuthenticationController> _logger;
+        private readonly UserManager<User> _userManager;
 
-        public AuthenticationController(IAuthService authService, ILogger<AuthenticationController> logger)
+        public AuthenticationController(IAuthService authService, ILogger<AuthenticationController> logger, UserManager<User> userManager)
         {
             _authService = authService;
             _logger = logger;
+            _userManager = userManager;
         }
 
         [HttpPost]
@@ -46,11 +50,15 @@ namespace EventPlannerApi.Controllers
             {
                 if (!ModelState.IsValid)
                     return BadRequest("Invalid payload");
+
+                // Register the user
                 var (status, message) = await _authService.Registration(model, UserRoles.Admin);
+
                 if (status == 0)
                 {
                     return BadRequest(message);
                 }
+
                 return CreatedAtAction(nameof(Register), model);
             }
             catch (Exception ex)

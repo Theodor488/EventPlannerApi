@@ -86,6 +86,11 @@ namespace EventPlannerApi.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<EventDTO>> PostEvent(EventDTO eventDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var eventItem = new Event
             {
                 Name = eventDTO.Name,
@@ -98,7 +103,7 @@ namespace EventPlannerApi.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(
-                nameof(eventItem),
+                nameof(GetEvent), // eventItem
                 new { id = eventItem.Id },
                 ItemToDTO(eventItem));
         }
