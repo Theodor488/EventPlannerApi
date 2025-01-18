@@ -52,7 +52,7 @@ namespace EventPlannerApi.Controllers
                     return BadRequest("Invalid payload");
 
                 // Register the user
-                var (status, message) = await _authService.Registration(model, UserRoles.Admin);
+                var (status, message) = await _authService.Registration(model, UserRoles.User);
 
                 if (status == 0)
                 {

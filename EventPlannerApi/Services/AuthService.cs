@@ -34,18 +34,16 @@ namespace EventPlannerApi.Services
 
             var createUserResult = await userManager.CreateAsync(user, model.Password);
 
-            // Add failed password logic exception. Require Alphanumeric uppercase
-
+            // Return detailed error messages if createUserResult failed
             if (!createUserResult.Succeeded)
-                return (0, "User creation failed! Please check user details and try again.");
+                return (0, $"User creation failed! {createUserResult}");
 
-            // Should I add logic to reject non-user and non-admin roles?
             if (!await roleManager.RoleExistsAsync(role))
                 await roleManager.CreateAsync(new IdentityRole(role));
 
             await userManager.AddToRoleAsync(user, role);
 
-            return (1, "User created successfully!");
+            return (1, $"User created successfully!");
         }
 
         public async Task<(int, string)> Login(LoginModel model)
