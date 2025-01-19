@@ -91,6 +91,12 @@ namespace EventPlannerApi.Controllers
                 return BadRequest(ModelState);
             }
 
+            // Prevent Duplicate Event Names
+            if (_context.Events.Any(e => e.Name == eventDTO.Name))
+            {
+                return BadRequest($"An event with name \"{eventDTO.Name}\" already exists!");
+            }
+
             var eventItem = new Event
             {
                 Name = eventDTO.Name,
