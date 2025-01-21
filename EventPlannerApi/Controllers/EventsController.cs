@@ -28,36 +28,36 @@ namespace EventPlannerApi.Controllers
         public async Task<ActionResult<IEnumerable<EventDTO>>> GetEvents()
         {
             return await _context.Events
-                .Select(x => ItemToDTO(x))
+                .Select(x => ItemToEventDTO(x))
                 .ToListAsync();
         }
 
         // GET: api/Events/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<EventDTO>> GetEvent(Guid id)
+        [HttpGet("{eventId}")]
+        public async Task<ActionResult<EventDTO>> GetEvent(Guid eventId)
         {
-            var eventItem = await _context.Events.FindAsync(id);
+            var eventItem = await _context.Events.FindAsync(eventId);
 
             if (eventItem == null)
             {
                 return NotFound();
             }
 
-            return ItemToDTO(eventItem);
+            return ItemToEventDTO(eventItem);
         }
 
         // PUT: api/Events/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("{eventId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> PutEvent(Guid id, EventDTO eventDTO)
+        public async Task<IActionResult> PutEvent(Guid eventId, EventDTO eventDTO)
         {
-            if (id != eventDTO.Id)
+            if (eventId != eventDTO.Id)
             {
                 return BadRequest();
             }
 
-            var eventItem = await _context.Events.FindAsync(id);
+            var eventItem = await _context.Events.FindAsync(eventId);
             if (eventItem == null)
             {
                 return NotFound();
@@ -72,7 +72,7 @@ namespace EventPlannerApi.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException) when (!EventExists(id))
+            catch (DbUpdateConcurrencyException) when (!EventExists(eventId))
             {
                 return NotFound();
             }
@@ -110,16 +110,16 @@ namespace EventPlannerApi.Controllers
 
             return CreatedAtAction(
                 nameof(GetEvent), // eventItem
-                new { id = eventItem.Id },
-                ItemToDTO(eventItem));
+                new { eventId = eventItem.Id },
+                ItemToEventDTO(eventItem));
         }
 
         // DELETE: api/Events/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{eventId}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteEvent(Guid id)
+        public async Task<IActionResult> DeleteEvent(Guid eventId)
         {
-            var eventItem = await _context.Events.FindAsync(id);
+            var eventItem = await _context.Events.FindAsync(eventId);
             if (eventItem == null)
             {
                 return NotFound();
@@ -131,19 +131,71 @@ namespace EventPlannerApi.Controllers
             return NoContent();
         }
 
-        private bool EventExists(Guid id)
+        [HttpPost("{eventId}/registerEvent")]
+        public async Task<IActionResult> RegisterUser(Guid eventId, Guid userId)
         {
-            return _context.Events.Any(e => e.Id == id);
+            bool eventExists = EventExists(eventId);
+            if (!eventExists) return NotFound("Event not found");
+
+            var registration = new EventRegistration { EventId = eventId, UserId = userId };
+            _context.EventRegistrations.Add(registration);
+            await _context.SaveChangesAsync();
+
+            return Ok("User to event registered successfully");
         }
 
-        private static EventDTO ItemToDTO(Event eventItem) =>
-       new EventDTO
-       {
-           Id = eventItem.Id,
-           Name = eventItem.Name,
-           Location = eventItem.Location,
-           Description = eventItem.Description,
-           Date = eventItem.Date
-       };
+        // GET: api/Events/5/attendees
+        [HttpGet("{eventId}/attendees")]
+        public async Task<ActionResult<IEnumerable<EventRegistrationDTO>>> GetEventAttendees(Guid eventId)
+        {
+            // Return User name, User ID, Event name, Event Id
+            var eventRegistrations = await _context.EventRegistrations
+                .Where(x => x.EventId == eventId)
+                .Select(x => ItemToEventRegistrationsDTO(x))
+                .ToListAsync();
+
+            // Return User names
+            return await _context.Users
+                .Select(x => ItemToEventDTO(x))
+                .ToListAsync();
+
+            // Populate List of Event Attendees IDs
+            List<Guid> attendeesIDsList = new List<Guid>();
+            foreach (eventRegistration in eventRegistrations)
+            {
+                attendeesIDsList.append(eventRegistration.UserId);
+            }
+
+            // Populate List if Event Attendees names
+            List<string> attendeesNamesList = new List<string>();
+            foreach (attendeeID in attendeesIDsList)
+            {
+                attendeesNamesList.Append()
+            }
+
+            return Ok($"EventId: {eventRegistrations}");
+        }
+
+        private bool EventExists(Guid eventId)
+        {
+            return _context.Events.Any(e => e.Id == eventId);
+        }
+
+        private static EventDTO ItemToEventDTO(Event eventItem) => new EventDTO
+        {
+            Id = eventItem.Id,
+            Name = eventItem.Name,
+            Location = eventItem.Location,
+            Description = eventItem.Description,
+            Date = eventItem.Date
+        };
+
+        private static EventRegistrationDTO ItemToEventRegistrationsDTO(EventRegistration eventRegistrationItem) => new EventRegistrationDTO
+        {
+            Id = eventRegistrationItem.Id,
+            UserId = eventRegistrationItem.UserId,
+            EventId = eventRegistrationItem.EventId,
+            RegisteredAt = eventRegistrationItem.RegisteredAt
+        };
     }
 }
