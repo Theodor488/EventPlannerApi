@@ -16,10 +16,12 @@ namespace EventPlannerApi.Controllers
     public class EventsController : ControllerBase
     {
         private readonly EventContext _context;
+        private readonly EventAuthContext _authContext;
 
-        public EventsController(EventContext context)
+        public EventsController(EventContext context, EventAuthContext authContext)
         {
             _context = context;
+            _authContext = authContext;
         }
 
         // GET: api/Events
@@ -154,26 +156,32 @@ namespace EventPlannerApi.Controllers
                 .Select(x => ItemToEventRegistrationsDTO(x))
                 .ToListAsync();
 
-            // Return User names
-            return await _context.Users
-                .Select(x => ItemToEventDTO(x))
-                .ToListAsync();
+            // Get list of distinct UserIDs
+            List<string> userIDs = eventRegistrations.Select(e => e.UserId.ToString()).ToList();
 
-            // Populate List of Event Attendees IDs
-            List<Guid> attendeesIDsList = new List<Guid>();
-            foreach (eventRegistration in eventRegistrations)
+            // Get User Info
+            var users = await _authContext.Users
+                .Where(user => userIDs.Contains(user.Id))
+                .Select(user => new
+                {
+                    user.Name,
+                    user.UserName,
+                    user.Id
+                }).ToListAsync();
+
+            // Get Event Info
+
+
+            // Get attendees
+            var attendees = eventRegistrations.Select(reg => new
             {
-                attendeesIDsList.append(eventRegistration.UserId);
-            }
+                reg.EventId,
+                reg.UserId,
+                UserName = users.FirstOrDefault(u => u.Id == reg.UserId.ToString())?.UserName ?? "Unknown",
+                Name = users.FirstOrDefault(u => u.Id == reg.UserId.ToString())?.Name ?? "Unknown"
+            }).ToList();
 
-            // Populate List if Event Attendees names
-            List<string> attendeesNamesList = new List<string>();
-            foreach (attendeeID in attendeesIDsList)
-            {
-                attendeesNamesList.Append()
-            }
-
-            return Ok($"EventId: {eventRegistrations}");
+            return Ok(attendees);
         }
 
         private bool EventExists(Guid eventId)
