@@ -150,10 +150,15 @@ namespace EventPlannerApi.Controllers
         [HttpGet("{eventId}/attendees")]
         public async Task<ActionResult<IEnumerable<EventRegistrationDTO>>> GetEventAttendees(Guid eventId)
         {
-            // Return User name, User ID, Event name, Event Id
+            // Return EventRegistrations
             var eventRegistrations = await _context.EventRegistrations
-                .Where(x => x.EventId == eventId)
-                .Select(x => ItemToEventRegistrationsDTO(x))
+                .Where(e => e.EventId == eventId)
+                .Select(e => ItemToEventRegistrationsDTO(e))
+                .ToListAsync();
+
+            // Return Event Info
+            var events = await _context.Events
+                .Where(e => e.Id == eventId)
                 .ToListAsync();
 
             // Get list of distinct UserIDs
@@ -169,16 +174,14 @@ namespace EventPlannerApi.Controllers
                     user.Id
                 }).ToListAsync();
 
-            // Get Event Info
-
-
             // Get attendees
             var attendees = eventRegistrations.Select(reg => new
             {
                 reg.EventId,
                 reg.UserId,
                 UserName = users.FirstOrDefault(u => u.Id == reg.UserId.ToString())?.UserName ?? "Unknown",
-                Name = users.FirstOrDefault(u => u.Id == reg.UserId.ToString())?.Name ?? "Unknown"
+                Name = users.FirstOrDefault(u => u.Id == reg.UserId.ToString())?.Name ?? "Unknown",
+                EventName = events.FirstOrDefault(e => e.Id == reg.EventId)?.Name ?? "Unknown"
             }).ToList();
 
             return Ok(attendees);
