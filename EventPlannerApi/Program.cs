@@ -8,12 +8,15 @@ using Microsoft.Extensions.Options;
 using EventPlannerApi.Services;
 using Microsoft.OpenApi.Models;
 
+// Creating the WebApplication Builder
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Dependency Injection for AuthService
 builder.Services.AddTransient<IAuthService, AuthService>();
 
+// Controllers Setup
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
@@ -47,15 +50,13 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// For Event Context
+// Database Context Configuration
 builder.Services.AddDbContext<EventContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// For Event Auth Context
 builder.Services.AddDbContext<EventAuthContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("AuthConnection")));
 
-// For identity
+// Identity Setup
 builder.Services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<EventAuthContext>()
                 .AddDefaultTokenProviders();
@@ -86,17 +87,17 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-// app.UseAuthentication() middleware
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Middleware Configuration
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// Middleware Pipeline Setup
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
