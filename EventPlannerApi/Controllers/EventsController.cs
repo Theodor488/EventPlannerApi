@@ -51,9 +51,14 @@ namespace EventPlannerApi.Controllers
         // PUT: api/Events/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{eventId}")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutEvent(Guid eventId, EventDTO eventDTO)
         {
+            var user = HttpContext.User;
+            if (!user.IsInRole("Admin"))
+            {
+                return Forbid("Access Denied. User is not an Admin.");
+            }
+
             if (eventId != eventDTO.Id)
             {
                 return BadRequest();
@@ -85,7 +90,6 @@ namespace EventPlannerApi.Controllers
         // POST: api/Events
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<EventDTO>> PostEvent(EventDTO eventDTO)
         {
             if (!ModelState.IsValid)
