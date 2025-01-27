@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EventPlannerApi.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace EventPlannerApi.Controllers
 {
@@ -51,7 +52,7 @@ namespace EventPlannerApi.Controllers
         // PUT: api/Events/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{eventId}")]
-        public async Task<IActionResult> PutEvent(Guid eventId, EventDTO eventDTO)
+        public async Task<IActionResult> PutEvent(Guid eventId, Event eventItem)
         {
             var user = HttpContext.User;
             if (!user.IsInRole("Admin"))
@@ -59,21 +60,21 @@ namespace EventPlannerApi.Controllers
                 return Forbid("Access Denied. User is not an Admin.");
             }
 
-            if (eventId != eventDTO.Id)
+            if (eventId != eventItem.Id)
             {
                 return BadRequest();
             }
 
-            var eventItem = await _context.Events.FindAsync(eventId);
-            if (eventItem == null)
+            var foundEventItem = await _context.Events.FindAsync(eventId); // ToDo. Return to this code Proper user of DTO?
+            if (foundEventItem == null)
             {
                 return NotFound();
             }
 
-            eventItem.Name = eventDTO.Name;
-            eventItem.Location = eventDTO.Location;
-            eventItem.Description = eventDTO.Description;
-            eventItem.Date = eventDTO.Date;
+            foundEventItem.Name = eventItem.Name;
+            foundEventItem.Location = eventItem.Location;
+            foundEventItem.Description = eventItem.Description;
+            foundEventItem.Date = eventItem.Date;
 
             try
             {
@@ -90,6 +91,7 @@ namespace EventPlannerApi.Controllers
         // POST: api/Events
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<EventDTO>> PostEvent(EventDTO eventDTO)
         {
             if (!ModelState.IsValid)
@@ -103,12 +105,21 @@ namespace EventPlannerApi.Controllers
                 return BadRequest($"An event with name \"{eventDTO.Name}\" already exists!");
             }
 
+            var user = HttpContext.User;
+            Guid newEventId = Guid.NewGuid();
+            string userName = user.Identity.Name;
+            Guid userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            //string userName = User.FindFirst(ClaimTypes.Name)?.Value;
+
             var eventItem = new Event
             {
+                Id = newEventId,
                 Name = eventDTO.Name,
-                Location = eventDTO.Location,
                 Description = eventDTO.Description,
-                Date = eventDTO.Date
+                Date = eventDTO.Date,
+                Location = eventDTO.Location,
+                EventHostUserName = userName,
+                EventHostUserId = userId
             };
 
             _context.Events.Add(eventItem);
@@ -198,11 +209,10 @@ namespace EventPlannerApi.Controllers
 
         private static EventDTO ItemToEventDTO(Event eventItem) => new EventDTO
         {
-            Id = eventItem.Id,
             Name = eventItem.Name,
-            Location = eventItem.Location,
             Description = eventItem.Description,
-            Date = eventItem.Date
+            Date = eventItem.Date,
+            Location = eventItem.Location
         };
 
         private static EventRegistrationDTO ItemToEventRegistrationsDTO(EventRegistration eventRegistrationItem) => new EventRegistrationDTO
