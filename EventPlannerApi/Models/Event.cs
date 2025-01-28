@@ -8,6 +8,6 @@
         public DateTime Date { get; set; }
         public string Location { get; set; }
         public Guid EventHostUserId { get; set; }
-        public string EventHostUserName { get; set; }
+        public string? EventHostUserName { get; set; }
     }
 }

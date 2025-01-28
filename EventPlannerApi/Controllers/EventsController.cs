@@ -52,23 +52,27 @@ namespace EventPlannerApi.Controllers
         // PUT: api/Events/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{eventId}")]
-        public async Task<IActionResult> PutEvent(Guid eventId, Event eventItem)
+        public async Task<IActionResult> PutEvent(Guid eventId, CreateEventDTO eventItem)
         {
-            var user = HttpContext.User;
-            if (!user.IsInRole("Admin"))
-            {
-                return Forbid("Access Denied. User is not an Admin.");
-            }
-
-            if (eventId != eventItem.Id)
-            {
-                return BadRequest();
-            }
-
-            var foundEventItem = await _context.Events.FindAsync(eventId); // ToDo. Return to this code Proper user of DTO?
+            var foundEventItem = await _context.Events.FindAsync(eventId);
             if (foundEventItem == null)
             {
                 return NotFound();
+            }
+
+            var user = HttpContext.User;
+            Guid loggedIn_userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            Guid eventHostId = foundEventItem.EventHostUserId;
+
+            // Deny access if logged in user is not event host or admin
+            if (!user.IsInRole("Admin") && loggedIn_userId != eventHostId)
+            {
+                return Forbid("Access Denied. User is not an admin or the event host.");
+            }
+
+            if (eventId != foundEventItem.Id)
+            {
+                return BadRequest();
             }
 
             foundEventItem.Name = eventItem.Name;
@@ -85,31 +89,30 @@ namespace EventPlannerApi.Controllers
                 return NotFound();
             }
 
-            return NoContent();
+            var updatedEventDTO = ItemToEventDTO(foundEventItem);
+            return Ok(updatedEventDTO);
         }
 
         // POST: api/Events
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize]
-        public async Task<ActionResult<EventDTO>> PostEvent(EventDTO eventDTO)
+        public async Task<ActionResult<EventDTO>> PostEvent([FromBody] CreateEventDTO eventDTO)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            Guid newEventId = Guid.NewGuid();
+            string userName = HttpContext.User.Identity.Name;
+            Guid userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
             // Prevent Duplicate Event Names
             if (_context.Events.Any(e => e.Name == eventDTO.Name))
             {
                 return BadRequest($"An event with name \"{eventDTO.Name}\" already exists!");
             }
-
-            var user = HttpContext.User;
-            Guid newEventId = Guid.NewGuid();
-            string userName = user.Identity.Name;
-            Guid userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            //string userName = User.FindFirst(ClaimTypes.Name)?.Value;
 
             var eventItem = new Event
             {
@@ -133,10 +136,19 @@ namespace EventPlannerApi.Controllers
 
         // DELETE: api/Events/5
         [HttpDelete("{eventId}")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteEvent(Guid eventId)
         {
-            var eventItem = await _context.Events.FindAsync(eventId);
+            Event eventItem = await _context.Events.FindAsync(eventId);
+            var user = HttpContext.User;
+            Guid loggedIn_userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            Guid eventHostId = eventItem.EventHostUserId;
+
+            // Deny access if logged in user is not event host or admin
+            if (!user.IsInRole("Admin") && loggedIn_userId != eventHostId)
+            {
+                return Forbid("Access Denied. User is not an admin or the event host.");
+            }
+            
             if (eventItem == null)
             {
                 return NotFound();
@@ -148,6 +160,7 @@ namespace EventPlannerApi.Controllers
             return NoContent();
         }
 
+        // POST: api/Events/5/registerEvent
         [HttpPost("{eventId}/registerEvent")]
         public async Task<IActionResult> RegisterUser(Guid eventId, Guid userId)
         {

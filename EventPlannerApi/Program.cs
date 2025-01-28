@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using EventPlannerApi.Services;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Mvc;
 
 // Creating the WebApplication Builder
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,12 @@ builder.Services.AddTransient<IAuthService, AuthService>();
 
 // Controllers Setup
 builder.Services.AddControllers();
+
+// Disable automatic model validation (to allow debugging requests)
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.SuppressModelStateInvalidFilter = true;
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -86,7 +93,6 @@ builder.Services.AddAuthentication(options =>
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
-
 
 var app = builder.Build();
 
