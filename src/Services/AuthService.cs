@@ -12,12 +12,14 @@ namespace EventPlannerApi.Services
         private readonly UserManager<User> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration _configuration;
+
         public AuthService(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             _configuration = configuration;
         }
+
         public async Task<(int, string)> Registration(RegistrationModel model, string role)
         {
             var userExists = await userManager.FindByNameAsync(model.Username);
@@ -69,6 +71,7 @@ namespace EventPlannerApi.Services
             string token = GenerateToken(authClaims);
             return (1, token);
         }
+
         private string GenerateToken(IEnumerable<Claim> claims)
         {
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
