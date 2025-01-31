@@ -92,21 +92,21 @@ Content-Type: application/json
     "userId": "{userId Guid}",
     "userName": "Celsus4",
     "name": "Celsus",
-    "eventName": "28th Birthday"
+    "eventName": "Birthday Party"
   },
   {
     "eventId": "{eventId Guid}",
     "userId": "{userId Guid}",
     "userName": "Theodor",
     "name": "Theo",
-    "eventName": "28th Birthday"
+    "eventName": "Birthday Party"
   },
   {
     "eventId": "{eventId Guid}",
     "userId": "{userId Guid}",
     "userName": "John488",
     "name": "John",
-    "eventName": "28th Birthday"
+    "eventName": "Birthday Party"
   }
 }
 ```
