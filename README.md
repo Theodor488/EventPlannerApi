@@ -90,22 +90,29 @@ Content-Type: application/json
   {
     "eventId": "{eventId Guid},
     "userId": "{userId Guid}",
-    "userName": "Celsus4",
+    "userName": "cctvmonkey",
     "name": "Celsus",
     "eventName": "Birthday Party"
   },
   {
     "eventId": "{eventId Guid}",
     "userId": "{userId Guid}",
-    "userName": "Theodor",
+    "userName": "Terrible_Theo",
     "name": "Theo",
     "eventName": "Birthday Party"
   },
   {
     "eventId": "{eventId Guid}",
     "userId": "{userId Guid}",
-    "userName": "John488",
+    "userName": "RdAndrews",
     "name": "John",
+    "eventName": "Birthday Party"
+  }
+  {
+    "eventId": "{eventId Guid}",
+    "userId": "{userId Guid}",
+    "userName": "Mary9099",
+    "name": "Jacob",
     "eventName": "Birthday Party"
   }
 }
