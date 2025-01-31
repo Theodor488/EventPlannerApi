@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using EventPlannerApi.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace EventPlannerApi.Models 
+namespace EventPlannerApi.Data
 {
     public class EventAuthContext : IdentityDbContext<User>
     {

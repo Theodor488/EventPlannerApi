@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using EventPlannerApi.Services;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using EventPlannerApi.Data;
 
 // Creating the WebApplication Builder
 var builder = WebApplication.CreateBuilder(args);

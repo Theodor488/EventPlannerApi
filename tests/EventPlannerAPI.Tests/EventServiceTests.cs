@@ -7,6 +7,7 @@ using System.Security.Claims;
 using EventPlannerApi.Controllers;
 using EventPlannerApi.Models;
 using System.Threading.Tasks;
+using EventPlannerApi.Data;
 
 namespace EventPlannerApi.Tests
 {
@@ -22,6 +23,7 @@ namespace EventPlannerApi.Tests
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
 
+            // Ensure clean database by deleting and recreating it
             _dbContext = new EventContext(options);
             _dbContext.Database.EnsureDeleted();
             _dbContext.Database.EnsureCreated();
@@ -64,7 +66,6 @@ namespace EventPlannerApi.Tests
             Console.WriteLine($"Event Count: {_dbContext.Events.Count()}");
             Console.WriteLine($"Retrieved Event: {_dbContext.Events.FirstOrDefault()?.Name}");
 
-
             var retrievedEvent = result.Value as EventDTO;
             retrievedEvent.Should().NotBeNull();
             retrievedEvent.Name.Should().Be("Test Event");
@@ -83,8 +84,6 @@ namespace EventPlannerApi.Tests
 
             // Extract the actual `CreatedAtActionResult`
             var createdResult = result.Result as CreatedAtActionResult;
-
-            await _dbContext.SaveChangesAsync();
 
             var allEvents = await _dbContext.Events.ToListAsync();
             Console.WriteLine($"Total Events in DB After Saving: {allEvents.Count}");

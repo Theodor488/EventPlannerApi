@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EventPlannerApi.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace EventPlannerApi.Models;
+namespace EventPlannerApi.Data;
 
 public class EventContext : DbContext
 {

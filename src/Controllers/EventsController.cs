@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using EventPlannerApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using EventPlannerApi.Data;
 
 namespace EventPlannerApi.Controllers
 {
@@ -18,11 +19,6 @@ namespace EventPlannerApi.Controllers
         {
             _context = context;
             _authContext = authContext;
-        }
-
-        public EventsController(EventContext context)
-        {
-            _context = context;
         }
 
         // GET: api/Events
