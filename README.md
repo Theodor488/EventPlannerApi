@@ -1,12 +1,12 @@
 # EventPlannerApi
 
-EventPlannerApi is a RESTful API for creating and managing events, built using ASP.NET Core, Entity Framework Core, and JWT-based authentication. The API allows users to create, update, delete, and retrieve events while ensuring proper role-based authorization and validation.
+EventPlannerApi is a RESTful API for creating, managing, and registering for events, built using ASP.NET Core, Entity Framework Core, and JWT-based authentication. The API allows users to login and create their own events, register for existing events, and update/delete owned events.
 
 ## Features
 
 - **JWT Authentication**: Secures the API with JWT tokens, allowing only authenticated users to perform certain actions.
 - **Role-Based Authorization**: Restricts access to updating or deleting events to admins or event hosts.
-- **CRUD Operations**: Provides endpoints to create, read, update, and delete events.
+- **CRUD Operations**: Provides endpoints to create, read, update, register/rsvp for and delete events.
 - **Validation**: Ensures proper data input through model validation.
 - **Swagger Integration**: Interactive API documentation and testing HTTP request methods via a web-based UI.
 
@@ -37,10 +37,12 @@ cd EventPlannerApi
 
 ### Events
 - **GET** `/api/Events`: Retrieve all events.
-- **GET** `/api/Events/{id}`: Retrieve a specific event by ID.
+- **GET** `/api/Events/{eventId}`: Retrieve a specific event by ID.
 - **POST** `/api/Events`: Create a new event (requires authentication).
-- **PUT** `/api/Events/{id}`: Update an existing event (requires authentication, admin or host access).
-- **DELETE** `/api/Events/{id}`: Delete an event (requires authentication, admin access or host access).
+- **PUT** `/api/Events/{eventId}`: Update an existing event (requires authentication, admin or host access).
+- **DELETE** `/api/Events/{eventId}`: Delete an event (requires authentication, admin access or host access).
+- **POST** `/api/Events/{eventId}/registerEvent`: Register/RSVP for an existing event.
+- **GET** `/api/Events/{eventId}/attendees`: Retrieve all users registered for an event. 
 
 ## Example Request
 
@@ -59,7 +61,6 @@ Content-Type: application/json
   "location": "New York City"
 }
 ```
-
 #### Response
 ```json
 {
@@ -67,5 +68,45 @@ Content-Type: application/json
   "description": "A fun birthday celebration",
   "date": "2025-01-28T14:00:00",
   "location": "New York City"
+}
+```
+
+### Registering for an Event
+#### Request
+```http
+POST /api/Events HTTP/1.1
+Host: localhost:7027
+Authorization: Bearer <your-jwt-token>
+Content-Type: application/json
+
+{
+  "eventId": "{eventId Guid}",
+  "userId": "{userId Guid}",
+}
+```
+#### Response
+```json
+{
+  {
+    "eventId": "{eventId Guid},
+    "userId": "{userId Guid}",
+    "userName": "Celsus4",
+    "name": "Celsus",
+    "eventName": "28th Birthday"
+  },
+  {
+    "eventId": "{eventId Guid}",
+    "userId": "{userId Guid}",
+    "userName": "Theodor",
+    "name": "Theo",
+    "eventName": "28th Birthday"
+  },
+  {
+    "eventId": "{eventId Guid}",
+    "userId": "{userId Guid}",
+    "userName": "John488",
+    "name": "John",
+    "eventName": "28th Birthday"
+  }
 }
 ```
