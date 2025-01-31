@@ -20,6 +20,11 @@ namespace EventPlannerApi.Controllers
             _authContext = authContext;
         }
 
+        public EventsController(EventContext context)
+        {
+            _context = context;
+        }
+
         // GET: api/Events
         [HttpGet]
         [AllowAnonymous]
