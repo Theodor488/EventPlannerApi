@@ -367,4 +367,5 @@ EventPlannerApi/Migrations/
 
 # Ignore actual config files but keep example
 src/appsettings.json
+EventPlannerApi/src/appsettings.json
 !src/appsettings.example.json
