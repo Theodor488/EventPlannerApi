@@ -86,7 +86,7 @@ namespace EventPlannerApi.Tests
 
             await _dbContext.SaveChangesAsync();
 
-            var allEvents = await _dbContext.Events.AsNoTracking().ToListAsync();
+            var allEvents = await _dbContext.Events.ToListAsync();
             Console.WriteLine($"Total Events in DB After Saving: {allEvents.Count}");
             foreach (var e in allEvents)
             {
